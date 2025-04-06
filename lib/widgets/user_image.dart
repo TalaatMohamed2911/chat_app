@@ -34,7 +34,8 @@ class _UserImagePickerState extends State<UserImagePicker> {
       children: [
         CircleAvatar(
           radius: 40,
-          backgroundColor: Colors.grey,
+          child: Icon(Icons.camera_alt_outlined),
+          // backgroundColor: Colors.grey,
           foregroundImage:
               _pickedImageFile == null ? null : FileImage(_pickedImageFile!),
         ),

@@ -1,4 +1,5 @@
-import '../main.dart';
+import '../di.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../widgets/chat_messages.dart';
 import '../widgets/new_message.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ class ChatScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final firebaseAuth = locator<FirebaseAuth>();
     return Scaffold(
       appBar: AppBar(
         title: Text('FlutterChat'),
@@ -22,7 +24,12 @@ class ChatScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Column(children: [Expanded(child: ChatMessages()), NewMessage()]),
+      body: Column(
+        children: [
+          Expanded(child: ChatMessages()),
+          NewMessage(),
+        ],
+      ),
     );
   }
 }

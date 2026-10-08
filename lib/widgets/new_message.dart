@@ -1,42 +1,21 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:chat_app/providers/messages_provider.dart';
 import 'package:flutter/material.dart';
-import '../main.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class NewMessage extends StatefulWidget {
+class NewMessage extends ConsumerStatefulWidget {
   const NewMessage({super.key});
 
   @override
-  State<NewMessage> createState() => _NewMessageState();
+  ConsumerState<NewMessage> createState() => _NewMessageState();
 }
 
-class _NewMessageState extends State<NewMessage> {
+class _NewMessageState extends ConsumerState<NewMessage> {
   final _messageController = TextEditingController();
+
   @override
   void dispose() {
     super.dispose();
     _messageController.dispose();
-  }
-
-  _sendMessage() async {
-    final _enteredMessage = _messageController.text;
-
-    if (_enteredMessage.trim().isEmpty) {
-      return;
-    }
-    _messageController.clear();
-
-    final User? user = firebaseAuth.currentUser;
-
-    final DocumentSnapshot<Map<String, dynamic>> userData =
-        await firebaseFirestore.collection('users').doc(user?.uid).get();
-
-    await firebaseFirestore.collection('chat').add({
-      'text': _enteredMessage,
-      'createAt': Timestamp.now(),
-      'userid': user?.uid,
-      'username': userData.data()!['username'],
-    });
   }
 
   @override
@@ -55,7 +34,13 @@ class _NewMessageState extends State<NewMessage> {
             ),
           ),
           IconButton(
-            onPressed: _sendMessage,
+            onPressed: () {
+              ref
+                  .read(messagesProvider.notifier)
+                  .sendMessage(_messageController.text);
+              FocusScope.of(context).unfocus();
+              _messageController.clear();
+            },
             icon: Icon(
               Icons.send,
               color: Theme.of(context).colorScheme.primary,

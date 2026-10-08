@@ -1,10 +1,11 @@
 import 'dart:developer';
 import 'dart:io';
 import 'package:chat_app/widgets/user_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-
-import '../main.dart';
+import '../di.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -14,16 +15,21 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
+  final firebaseAuth = locator<FirebaseAuth>();
+  final firebaseStorage = locator<FirebaseStorage>();
+  final firebaseFirestore = locator<FirebaseFirestore>();
+
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   var _isLogin = true;
+  var _enteredUserName = '';
   var _enteredEmail = '';
   var _enteredPassword = '';
-  var _enteredUserName = '';
   File? _selectedImage;
   var _isUpLoading = false;
 
   void _submit() async {
     final valid = _formKey.currentState!.validate();
+
     if (!valid || (!_isLogin && _selectedImage == null)) {
       return;
     }
@@ -43,20 +49,22 @@ class _AuthScreenState extends State<AuthScreen> {
               email: _enteredEmail,
               password: _enteredPassword,
             );
-        // final Reference storageRef = FirebaseStorage.instance
-        //     .ref()
-        //     .child('user_image')
-        //     .child('${userCredential.user!.uid}.jpg');
-        // await storageRef.putFile(_selectedImage!);
-        // final imageUrl = await storageRef.getDownloadURL();
-        // log(imageUrl);
+
+        final Reference storageRef = firebaseStorage
+            .ref()
+            .child('user_image')
+            .child('${userCredential.user!.uid}.jpg');
+        await storageRef.putFile(_selectedImage!);
+        final imageUrl = await storageRef.getDownloadURL();
+        log(imageUrl);
+
         await firebaseFirestore
             .collection('users')
             .doc(userCredential.user!.uid)
             .set({
               'username': _enteredUserName,
               'email': _enteredEmail,
-              // 'image_url': imageUrl,
+              'image_url': imageUrl,
             });
       }
     } on FirebaseAuthException catch (e) {
@@ -105,8 +113,8 @@ class _AuthScreenState extends State<AuthScreen> {
                             ),
                           if (!_isLogin)
                             TextFormField(
-                              onSaved:
-                                  (userName) => _enteredUserName = userName!,
+                              onSaved: (userName) =>
+                                  _enteredUserName = userName!,
                               decoration: InputDecoration(
                                 labelText: 'Username',
                               ),

@@ -31,8 +31,8 @@ class MessagesProvider extends StateNotifier<Map<String, dynamic>> {
       'text': enteredMessage,
       'createAt': Timestamp.now(),
       'userid': user?.uid,
-      'username': userData.data()!['username'],
-      'userImage': userData.data()!['image_url'],
+      'username': userData.data()?['username'],
+      'userImage': userData.data()?['image_url'],
     });
   }
 }
